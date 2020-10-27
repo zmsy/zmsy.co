@@ -60,6 +60,13 @@ paginate: 5
 # layouts settings
 staticDir: static/
 
+module:
+  mounts:
+    - source: assets
+      target: assets
+    - source: node_modules/bulma/
+      target: assets/styles/bulma/
+
 # deployment information
 deployment:
   targets:
