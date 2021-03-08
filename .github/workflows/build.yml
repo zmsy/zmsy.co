@@ -1,21 +1,36 @@
-name: Build & Deploy to S3
+name: Build & Deploy to Github Pages
 
-on: push
+on:
+  push:
+    branches:
+      - master
 
 jobs:
-  build:
+  deploy:
     name: Build and Deploy
     runs-on: ubuntu-latest
-    container: klakegg/hugo:0.76.5-ext-alpine
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
+
+      - name: Setup NPM
+        uses: actions/setup-node@v1
+        with:
+          node-version: 12
+
+      - name: Setup Hugo
+        uses: peaceiris/actions-hugo@v2
+        with:
+          hugo-version: "0.81.0"
+          extended: true
+
       - name: NPM Install
         run: npm install
-      - name: Hugo Build
-        run: npm run build
-      - name: Deploy to S3
-        if: github.ref == 'refs/heads/master'
-        run: npm run deploy-ci
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+      - name: Build
+        run: HUGO_ENVIRONMENT=production hugo -v --minify -b https://zmsy.github.io/zmsy.co/
+
+      - name: Deploy
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./public
